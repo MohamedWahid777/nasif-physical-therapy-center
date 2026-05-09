@@ -375,31 +375,28 @@ function broadcastMobilePause(duration) {
 
 function MobileMarqueeRow({ items, lang, direction }) {
   const scrollRef = useRef(null);
-  const isSwiping = useRef(false);       // swipe جاري
-  const isTapPaused = useRef(false);     // توقف بسبب tap
-  const isProgrammaticScroll = useRef(false);
-  const isPaused = useRef(false);        // broadcast pause
+  const isTapPaused = useRef(false);
+  const isPaused = useRef(false);
   const resumeTimer = useRef(null);
   const rafId = useRef(null);
   const lastTime = useRef(performance.now());
   const initialized = useRef(false);
 
-  // تتبع نقطة بداية اللمس لتحديد tap vs swipe
   const touchStartX = useRef(0);
   const touchStartY = useRef(0);
-  const touchMoved = useRef(false);
+  const lastTouchX = useRef(0);
+  const swipeDir = useRef(null); // null | "h" | "v"
+  const isManualScrolling = useRef(false);
 
   const CARD_WIDTH = 280 + 16;
   const baseSpeed = direction === "left" ? 1.5 : -1.5;
 
-  // broadcast pause من الصف الثاني
+  // broadcast pause
   useEffect(() => {
     const handler = (duration) => {
       isPaused.current = true;
       if (resumeTimer.current) clearTimeout(resumeTimer.current);
-      resumeTimer.current = setTimeout(() => {
-        isPaused.current = false;
-      }, duration);
+      resumeTimer.current = setTimeout(() => { isPaused.current = false; }, duration);
     };
     mobileRowPauseCallbacks.push(handler);
     return () => {
@@ -412,91 +409,98 @@ function MobileMarqueeRow({ items, lang, direction }) {
   useEffect(() => {
     const container = scrollRef.current;
     if (!container) return;
-
     const tripledWidth = items.length * CARD_WIDTH;
-
     if (!initialized.current) {
       container.scrollLeft = tripledWidth;
       initialized.current = true;
     }
-
-    const screenMultiplier =
-      window.innerWidth < 480 ? 0.7 : window.innerWidth < 768 ? 0.9 : 1;
+    const screenMultiplier = window.innerWidth < 480 ? 0.7 : window.innerWidth < 768 ? 0.9 : 1;
     const adaptiveSpeed = baseSpeed * screenMultiplier;
 
     const step = (time) => {
       const delta = time - lastTime.current;
       lastTime.current = time;
-
-      const paused = isSwiping.current || isTapPaused.current || isPaused.current;
+      const paused = isTapPaused.current || isPaused.current || isManualScrolling.current;
       if (!paused && scrollRef.current) {
         const c = scrollRef.current;
-        const move = adaptiveSpeed * (delta / 16.67);
-        isProgrammaticScroll.current = true;
-        c.scrollLeft += move;
-
-        if (c.scrollLeft >= tripledWidth * 2) {
-          c.scrollLeft -= tripledWidth;
-        } else if (c.scrollLeft <= 0) {
-          c.scrollLeft += tripledWidth;
-        }
+        c.scrollLeft += adaptiveSpeed * (delta / 16.67);
+        if (c.scrollLeft >= tripledWidth * 2) c.scrollLeft -= tripledWidth;
+        else if (c.scrollLeft <= 0) c.scrollLeft += tripledWidth;
       }
-
       rafId.current = requestAnimationFrame(step);
     };
-
     rafId.current = requestAnimationFrame(step);
-
     return () => {
       cancelAnimationFrame(rafId.current);
       if (resumeTimer.current) clearTimeout(resumeTimer.current);
     };
   }, [items, direction, baseSpeed]);
 
-  // Manual scroll (swipe detection via scroll event)
-  const handleScroll = () => {
-    if (isProgrammaticScroll.current) {
-      isProgrammaticScroll.current = false;
-      return;
-    }
-    isSwiping.current = true;
-    if (resumeTimer.current) clearTimeout(resumeTimer.current);
-    resumeTimer.current = setTimeout(() => {
-      isSwiping.current = false;
-    }, 1500);
-  };
+  // Native touch handlers عشان نقدر نعمل preventDefault على الأفقي بس
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const tripledWidth = items.length * CARD_WIDTH;
 
-  const swipeDirection = useRef(null); // 'horizontal' | 'vertical' | null
+    const onTouchStart = (e) => {
+      touchStartX.current = e.touches[0].clientX;
+      touchStartY.current = e.touches[0].clientY;
+      lastTouchX.current = e.touches[0].clientX;
+      swipeDir.current = null;
+      isManualScrolling.current = false;
+    };
 
-  const handleTouchStart = (e) => {
-    touchStartX.current = e.touches[0].clientX;
-    touchStartY.current = e.touches[0].clientY;
-    touchMoved.current = false;
-    swipeDirection.current = null;
-  };
-
-  const handleTouchMove = (e) => {
-    touchMoved.current = true;
-    // حدد اتجاه السوايب أول مرة بس
-    if (!swipeDirection.current) {
+    const onTouchMove = (e) => {
       const dx = Math.abs(e.touches[0].clientX - touchStartX.current);
       const dy = Math.abs(e.touches[0].clientY - touchStartY.current);
-      if (dx > 5 || dy > 5) {
-        swipeDirection.current = dy > dx ? "vertical" : "horizontal";
+
+      // حدد الاتجاه أول مرة بس
+      if (!swipeDir.current && (dx > 6 || dy > 6)) {
+        swipeDir.current = dy > dx ? "v" : "h";
       }
-    }
-  };
 
-  const handleTouchEnd = (e) => {
-    const dx = Math.abs(e.changedTouches[0].clientX - touchStartX.current);
-    const dy = Math.abs(e.changedTouches[0].clientY - touchStartY.current);
-    const isRealTap = dx < 8 && dy < 8 && !touchMoved.current;
+      if (swipeDir.current === "h") {
+        // أفقي: امنع سكرول الصفحة وحرك الكروت يدوياً
+        e.preventDefault();
+        const delta = lastTouchX.current - e.touches[0].clientX;
+        el.scrollLeft += delta;
+        if (el.scrollLeft >= tripledWidth * 2) el.scrollLeft -= tripledWidth;
+        else if (el.scrollLeft <= 0) el.scrollLeft += tripledWidth;
+        isManualScrolling.current = true;
+      }
+      // رأسي: مش بنعمل حاجة → المتصفح يسكرول الصفحة بحرية
 
-    if (isRealTap) {
-      isTapPaused.current = !isTapPaused.current;
-    }
-    swipeDirection.current = null;
-  };
+      lastTouchX.current = e.touches[0].clientX;
+    };
+
+    const onTouchEnd = (e) => {
+      const dx = Math.abs(e.changedTouches[0].clientX - touchStartX.current);
+      const dy = Math.abs(e.changedTouches[0].clientY - touchStartY.current);
+      const isTap = dx < 8 && dy < 8 && swipeDir.current === null;
+
+      if (isTap) {
+        // كليك → toggle pause
+        isTapPaused.current = !isTapPaused.current;
+      } else if (swipeDir.current === "h") {
+        // بعد سوايب أفقي → يكمل بعد 1500ms
+        if (resumeTimer.current) clearTimeout(resumeTimer.current);
+        resumeTimer.current = setTimeout(() => {
+          isManualScrolling.current = false;
+        }, 1500);
+      }
+      swipeDir.current = null;
+    };
+
+    el.addEventListener("touchstart", onTouchStart, { passive: true });
+    el.addEventListener("touchmove", onTouchMove, { passive: false });
+    el.addEventListener("touchend", onTouchEnd, { passive: true });
+
+    return () => {
+      el.removeEventListener("touchstart", onTouchStart);
+      el.removeEventListener("touchmove", onTouchMove);
+      el.removeEventListener("touchend", onTouchEnd);
+    };
+  }, [items]);
 
   // لو tap خارج الصف → يكمل
   useEffect(() => {
@@ -505,7 +509,7 @@ function MobileMarqueeRow({ items, lang, direction }) {
         isTapPaused.current = false;
       }
     };
-    document.addEventListener("touchstart", onDocTouch);
+    document.addEventListener("touchstart", onDocTouch, { passive: true });
     return () => document.removeEventListener("touchstart", onDocTouch);
   }, []);
 
@@ -517,10 +521,6 @@ function MobileMarqueeRow({ items, lang, direction }) {
       dir="ltr"
       className="flex overflow-x-auto hide-scrollbar gap-4 px-4 select-none overscroll-x-contain relative z-10"
       style={{ willChange: "scroll-position", touchAction: "pan-y" }}
-      onScroll={handleScroll}
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
     >
       {tripled.map((m, i) => (
         <div key={i} className="shrink-0" data-mobile-card>
@@ -530,7 +530,6 @@ function MobileMarqueeRow({ items, lang, direction }) {
     </div>
   );
 }
-
 /* ─────────────────────────────────────────────
    TEAM MEMBER CARD
 ────────────────────────────────────────────── */
