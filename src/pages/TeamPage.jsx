@@ -207,11 +207,13 @@ function DesktopMarqueeRow({ items, lang, direction }) {
   const halfRef = useRef(0);
   const rafRef = useRef(null);
 
-  const isHovered = useRef(false);
+  const isClicked = useRef(false);
   const isDragging = useRef(false);
   const isWheeling = useRef(false);
   const wheelTimer = useRef(null);
   const lastClientX = useRef(0);
+  const mouseDownX = useRef(0);
+  const mouseDownY = useRef(0);
 
   const speed = direction === "left" ? -50 : 50; // px per second
 
@@ -239,7 +241,7 @@ function DesktopMarqueeRow({ items, lang, direction }) {
       lastTime = now;
 
       const interacting =
-        isHovered.current || isDragging.current || isWheeling.current;
+        isClicked.current || isDragging.current || isWheeling.current;
       if (!interacting) {
         posRef.current += (speed * dt) / 1000;
         wrapPos();
@@ -256,17 +258,12 @@ function DesktopMarqueeRow({ items, lang, direction }) {
     };
   }, [speed, wrapPos]);
 
-  const handleMouseEnter = () => {
-    isHovered.current = true;
-  };
-  const handleMouseLeave = () => {
-    isHovered.current = false;
-    isDragging.current = false;
-  };
-
   const handleMouseDown = (e) => {
     isDragging.current = true;
+    isClicked.current = true;
     lastClientX.current = e.clientX;
+    mouseDownX.current = e.clientX;
+    mouseDownY.current = e.clientY;
     e.preventDefault();
   };
 
@@ -281,8 +278,28 @@ function DesktopMarqueeRow({ items, lang, direction }) {
     [wrapPos],
   );
 
-  const handleMouseUp = useCallback(() => {
+  const handleMouseUp = useCallback((e) => {
     isDragging.current = false;
+    // If mouse didn't move much → it's a click → keep paused
+    const dx = Math.abs(e.clientX - mouseDownX.current);
+    const dy = Math.abs(e.clientY - mouseDownY.current);
+    const isRealClick = dx < 5 && dy < 5;
+    if (!isRealClick) {
+      // Was a drag, resume immediately
+      isClicked.current = false;
+    }
+    // If real click: stay paused until next mousedown anywhere outside
+  }, []);
+
+  // Release pause when user clicks anywhere outside the wrapper
+  useEffect(() => {
+    const onDocClick = (e) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
+        isClicked.current = false;
+      }
+    };
+    document.addEventListener("mousedown", onDocClick);
+    return () => document.removeEventListener("mousedown", onDocClick);
   }, []);
 
   useEffect(() => {
@@ -320,10 +337,8 @@ function DesktopMarqueeRow({ items, lang, direction }) {
   return (
     <div
       ref={wrapperRef}
-      className="w-full overflow-hidden cursor-grab active:cursor-grabbing select-none"
+      className="w-full overflow-hidden cursor-default select-none"
       dir="ltr"
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
       onMouseDown={handleMouseDown}
       style={{ touchAction: "pan-y" }}
     >
