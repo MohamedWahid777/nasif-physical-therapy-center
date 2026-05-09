@@ -1,0 +1,104 @@
+{
+  "nav": {
+    "home": "Home",
+    "about": "About Us",
+    "services": "Services",
+    "team": "Medical Team",
+    "results": "Results",
+    "contact": "Contact Us"
+  },
+  "hero": {
+    "title": "Nasif Physical Therapy & Rehabilitation Center",
+    "subtitle": "Comprehensive healthcare with the latest therapeutic technologies and equipment",
+    "cta_book": "Book Your Appointment",
+    "cta_services": "Discover Our Services"
+  },
+  "about": {
+    "title": "About Us",
+    "subtitle": "About the Center",
+    "read_more": "Read More",
+    "vision_title": "Our Vision",
+    "mission_title": "Our Mission",
+    "why_choose": "Why Patients Choose Us?",
+    "equipment_title": "Physical Therapy Equipment",
+    "equipment_subtitle": "Latest therapeutic devices and technologies",
+    "gallery_title": "Photo Gallery",
+    "rehab_equipment": "Rehabilitation & Sports Equipment"
+  },
+  "services": {
+    "title": "Our Services",
+    "subtitle": "Available Specializations at the Center",
+    "view_all": "View All Services"
+  },
+  "conditions": {
+    "title": "Conditions We Treat",
+    "subtitle": "We provide specialized treatment for various conditions"
+  },
+  "team": {
+    "title": "Medical Team",
+    "subtitle": "A Team of Experienced Specialists",
+    "filter_all": "All",
+    "in_action": "Our Team in Action",
+    "inside_center": {
+      "title": "Inside the Center",
+      "subtitle": "Featured Moments"
+    },
+    "specialty": "Specialty",
+    "experience": "Experience"
+  },
+  "results": {
+    "title": "Our Results",
+    "subtitle": "Before and After Treatment",
+    "before": "Before",
+    "after": "After",
+    "video_title": "Results Video",
+    "testimonials_title": "Patient Reviews"
+  },
+  "testimonials": {
+    "title": "Patient Reviews",
+    "subtitle": "What our patients say about us"
+  },
+  "contact": {
+    "title": "Contact Us",
+    "subtitle": "We're here to help you",
+    "info_title": "Contact Information",
+    "center_name": "Center Name",
+    "branches": "Branches",
+    "branch_egypt": "Egypt Branch",
+    "branch_ksa": "Saudi Arabia Branch",
+    "phone": "Phone",
+    "email": "Email",
+    "hours": "Working Hours",
+    "days": "Working Days",
+    "social": "Social Media",
+    "form_title": "Send us a message",
+    "booking_title": "Book Your Appointment",
+    "name": "Name",
+    "phone_input": "Phone Number",
+    "message": "Message",
+    "service": "Service",
+    "date": "Date",
+    "time": "Time",
+    "send": "Send",
+    "book": "Book Now",
+    "success": "Your message has been sent successfully!"
+  },
+  "cta": {
+    "title": "Start Your Treatment Journey Today",
+    "subtitle": "Book your appointment now and get ready for a pain-free life",
+    "button": "Book Your Appointment"
+  },
+  "footer": {
+    "rights": "All Rights Reserved",
+    "description": "A center specialized in physical therapy, rehabilitation, speech therapy, and sensory integration"
+  },
+  "highlight": {
+    "title": "Tour Inside the Center",
+    "subtitle": "Discover our advanced center"
+  },
+  "common": {
+    "loading": "Loading...",
+    "dark_mode": "Dark Mode",
+    "light_mode": "Light Mode"
+  }
+}

@@ -1,0 +1,162 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  /* Elegant Medical Blue */
+  --color-primary-50: #f0f6ff;
+  --color-primary-100: #deedff;
+  --color-primary-200: #b6d9ff;
+  --color-primary-300: #8cc2ff;
+  --color-primary-400: #5fa8ff;
+  --color-primary-500: #3b82f6;
+  --color-primary-600: #2563eb;
+  --color-primary-700: #1d4ed8;
+  --color-primary-800: #1e40af;
+  --color-primary-900: #1e3a8a;
+
+  /* Cyan Accent */
+  --color-accent-400: #38bdf8;
+  --color-accent-500: #0ea5e9;
+  --color-accent-600: #0284c7;
+
+  /* Soft White & Neutral Gray */
+  --color-neutral-50: #fafafa;
+  --color-neutral-100: #f4f4f5;
+  --color-neutral-200: #e4e4e7;
+  --color-neutral-300: #d4d4d8;
+  --color-neutral-400: #a1a1aa;
+  --color-neutral-500: #71717a;
+  --color-neutral-600: #52525b;
+  --color-neutral-700: #3f3f46;
+  --color-neutral-800: #27272a;
+  --color-neutral-900: #18181b;
+
+  /* Dark Mode True Deep Black / Grayscale */
+  --color-dark-bg: #050505;
+  --color-dark-card: #111111;
+  --color-dark-surface: #1a1a1a;
+  --color-dark-border: #2a2a2a;
+  --color-dark-text: #e5e5e5;
+  --color-dark-muted: #a3a3a3;
+
+  /* Typography */
+  --font-display: "Playfair Display", "Noto Serif Arabic", serif;
+  --font-body: "DM Sans", "Noto Sans Arabic", sans-serif;
+}
+
+@layer base {
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: var(--color-neutral-50);
+    color: var(--color-neutral-900);
+    overflow-x: hidden;
+  }
+
+  #root {
+    overflow-x: clip;
+    width: 100%;
+  }
+
+  html.dark body {
+    background-color: var(--color-dark-bg);
+    color: var(--color-dark-text);
+  }
+
+  [dir="rtl"] body {
+    font-family: "Noto Sans Arabic", "DM Sans", sans-serif;
+  }
+
+  [dir="rtl"] .font-display {
+    font-family: "Noto Serif Arabic", "Playfair Display", serif;
+  }
+
+  ::selection {
+    background-color: var(--color-primary-500);
+    color: white;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-neutral-300);
+    border-radius: 3px;
+  }
+  .dark ::-webkit-scrollbar-thumb {
+    background: var(--color-dark-border);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-primary-400);
+  }
+}
+
+@layer utilities {
+  /* Reduced Scale Padding */
+  .section-padding {
+    @apply py-12 px-4 md:px-6 lg:px-8;
+  }
+
+  /* Refined Typographic Scale */
+  .section-title {
+    @apply font-display text-3xl md:text-4xl lg:text-5xl font-bold text-neutral-900 dark:text-dark-text tracking-tight;
+  }
+  .section-subtitle {
+    @apply font-body text-neutral-500 dark:text-dark-muted text-base md:text-lg mt-3 max-w-2xl font-light;
+  }
+
+  /* Compact Refined Glass Cards */
+  .card-base {
+    @apply bg-white/80 dark:bg-dark-card/90 backdrop-blur-md rounded-2xl border border-neutral-100 dark:border-dark-border shadow-[0_4px_20px_rgb(0,0,0,0.03)] dark:shadow-[0_4px_20px_rgb(0,0,0,0.2)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:hover:shadow-[0_8px_30px_rgba(255,255,255,0.03)] transition-all duration-300;
+  }
+
+  /* Modern Premium Buttons */
+  .btn-primary {
+    @apply relative flex items-center justify-center overflow-hidden bg-primary-600 text-white font-body font-medium text-sm px-6 py-2.5 rounded-full transition-all duration-300 border border-primary-500/50 shadow-[0_4px_12px_rgba(37,99,235,0.2)] hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(37,99,235,0.35)] hover:bg-primary-700;
+  }
+  .btn-primary::after {
+    content: "";
+    @apply absolute inset-0 rounded-full bg-gradient-to-r from-white/0 via-white/10 to-white/0 opacity-0 transition-opacity duration-300;
+  }
+  .btn-primary:hover::after {
+    @apply opacity-100;
+  }
+
+  .btn-outline {
+    @apply relative flex items-center justify-center overflow-hidden bg-white/50 dark:bg-dark-surface text-neutral-800 dark:text-dark-text font-body font-medium text-sm px-6 py-2.5 rounded-full transition-all duration-300 border border-neutral-200 dark:border-dark-border shadow-sm hover:-translate-y-0.5 hover:shadow-[0_4px_16px_rgba(0,0,0,0.06)] dark:hover:shadow-[0_4px_16px_rgba(255,255,255,0.03)] hover:bg-neutral-50 dark:hover:bg-dark-card hover:border-neutral-300 dark:hover:border-neutral-700;
+  }
+
+  /* Gradient Text */
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary-700 to-primary-500 dark:from-primary-400 dark:to-accent-400;
+  }
+
+  /* Subtle Background Glow */
+  .bg-glow {
+    @apply absolute rounded-full blur-[80px] opacity-20 dark:opacity-10 pointer-events-none;
+  }
+
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}
