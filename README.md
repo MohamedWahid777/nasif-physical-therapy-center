@@ -1,10 +1,6 @@
 # 🏥 Nasif Physical Therapy Center
 ### The Pinnacle of Clinical Excellence & Digital Sophistication
 
-[![Nasif Center](https://img.shields.io/badge/Status-Premium-blueviolet?style=for-the-badge&logo=react)](https://nasif-center.com)
-[![Bilingual](https://img.shields.io/badge/Language-Bilingual_%7C_AR_%7C_EN-0EA5E9?style=for-the-badge)](https://nasif-center.com)
-[![Luxury Design](https://img.shields.io/badge/Design-Luxury_Editorial-FACC15?style=for-the-badge)](https://nasif-center.com)
-
 **Nasif Physical Therapy Center** is a high-end, elite medical platform engineered to bridge the gap between clinical excellence and luxury digital experience. This is not just a clinic website; it is an executive-level digital portal designed to inspire trust, communicate authority, and provide a seamless patient journey across borders.
 
 ---
