@@ -375,18 +375,24 @@ function broadcastMobilePause(duration) {
 
 function MobileMarqueeRow({ items, lang, direction }) {
   const scrollRef = useRef(null);
-  const isInteracting = useRef(false);
+  const isSwiping = useRef(false);       // swipe جاري
+  const isTapPaused = useRef(false);     // توقف بسبب tap
   const isProgrammaticScroll = useRef(false);
-  const isPaused = useRef(false);
+  const isPaused = useRef(false);        // broadcast pause
   const resumeTimer = useRef(null);
   const rafId = useRef(null);
   const lastTime = useRef(performance.now());
   const initialized = useRef(false);
 
-  const CARD_WIDTH = 280 + 16; // card width + gap
+  // تتبع نقطة بداية اللمس لتحديد tap vs swipe
+  const touchStartX = useRef(0);
+  const touchStartY = useRef(0);
+  const touchMoved = useRef(false);
+
+  const CARD_WIDTH = 280 + 16;
   const baseSpeed = direction === "left" ? 1.5 : -1.5;
 
-  // Register this row to receive broadcast pause signals
+  // broadcast pause من الصف الثاني
   useEffect(() => {
     const handler = (duration) => {
       isPaused.current = true;
@@ -409,7 +415,6 @@ function MobileMarqueeRow({ items, lang, direction }) {
 
     const tripledWidth = items.length * CARD_WIDTH;
 
-    // Start position: middle set
     if (!initialized.current) {
       container.scrollLeft = tripledWidth;
       initialized.current = true;
@@ -423,15 +428,13 @@ function MobileMarqueeRow({ items, lang, direction }) {
       const delta = time - lastTime.current;
       lastTime.current = time;
 
-      const paused = isInteracting.current || isPaused.current;
+      const paused = isSwiping.current || isTapPaused.current || isPaused.current;
       if (!paused && scrollRef.current) {
         const c = scrollRef.current;
         const move = adaptiveSpeed * (delta / 16.67);
-
         isProgrammaticScroll.current = true;
         c.scrollLeft += move;
 
-        // Seamless infinite loop
         if (c.scrollLeft >= tripledWidth * 2) {
           c.scrollLeft -= tripledWidth;
         } else if (c.scrollLeft <= 0) {
@@ -450,30 +453,51 @@ function MobileMarqueeRow({ items, lang, direction }) {
     };
   }, [items, direction, baseSpeed]);
 
-  // Manual touch/drag interaction
+  // Manual scroll (swipe detection via scroll event)
   const handleScroll = () => {
     if (isProgrammaticScroll.current) {
       isProgrammaticScroll.current = false;
       return;
     }
-    // Manual scroll detected
-    isInteracting.current = true;
+    isSwiping.current = true;
     if (resumeTimer.current) clearTimeout(resumeTimer.current);
     resumeTimer.current = setTimeout(() => {
-      isInteracting.current = false;
+      isSwiping.current = false;
     }, 1500);
   };
 
-  const handleTouchStart = () => {
-    isInteracting.current = true;
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+    touchMoved.current = false;
   };
 
-  const handleTouchEnd = () => {
-    if (resumeTimer.current) clearTimeout(resumeTimer.current);
-    resumeTimer.current = setTimeout(() => {
-      isInteracting.current = false;
-    }, 1500);
+  const handleTouchMove = () => {
+    touchMoved.current = true;
   };
+
+  const handleTouchEnd = (e) => {
+    const dx = Math.abs(e.changedTouches[0].clientX - touchStartX.current);
+    const dy = Math.abs(e.changedTouches[0].clientY - touchStartY.current);
+    const isRealTap = dx < 8 && dy < 8 && !touchMoved.current;
+
+    if (isRealTap) {
+      // Tap → toggle pause
+      isTapPaused.current = !isTapPaused.current;
+    }
+    // Swipe → يكمل تلقائي بعد 1500ms عن طريق handleScroll
+  };
+
+  // لو tap خارج الصف → يكمل
+  useEffect(() => {
+    const onDocTouch = (e) => {
+      if (scrollRef.current && !scrollRef.current.contains(e.target)) {
+        isTapPaused.current = false;
+      }
+    };
+    document.addEventListener("touchstart", onDocTouch);
+    return () => document.removeEventListener("touchstart", onDocTouch);
+  }, []);
 
   const tripled = [...items, ...items, ...items];
 
@@ -485,10 +509,8 @@ function MobileMarqueeRow({ items, lang, direction }) {
       style={{ willChange: "scroll-position" }}
       onScroll={handleScroll}
       onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
-      onMouseDown={() => {
-        isInteracting.current = true;
-      }}
     >
       {tripled.map((m, i) => (
         <div key={i} className="shrink-0" data-mobile-card>
