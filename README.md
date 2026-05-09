@@ -5,10 +5,6 @@
 
 ---
 
-## 📸 Project Preview
-
-![Nasif Center Luxury Experience](https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=1200&q=80)
-*Experience the intersection of advanced technology and human-centric care.*
 
 ---
 
@@ -92,32 +88,6 @@ src/
 └── 💉 data/            # Static assets and asset references
 ```
 
----
-
-## 🏁 Installation & Setup
-
-### Prerequisites
-*   **Node.js** (v18.0.0+)
-*   **npm** or **yarn**
-
-### Quick Start
-1.  **Clone the Repository**
-    ```bash
-    git clone <repository-url>
-    cd nasif-medical-portal
-    ```
-2.  **Install Production Dependencies**
-    ```bash
-    npm install
-    ```
-3.  **Launch Development Environment**
-    ```bash
-    npm run dev
-    ```
-4.  **Execute Production Build**
-    ```bash
-    npm run build
-    ```
 
 ---
 
