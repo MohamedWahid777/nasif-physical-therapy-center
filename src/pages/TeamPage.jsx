@@ -466,14 +466,25 @@ function MobileMarqueeRow({ items, lang, direction }) {
     }, 1500);
   };
 
+  const swipeDirection = useRef(null); // 'horizontal' | 'vertical' | null
+
   const handleTouchStart = (e) => {
     touchStartX.current = e.touches[0].clientX;
     touchStartY.current = e.touches[0].clientY;
     touchMoved.current = false;
+    swipeDirection.current = null;
   };
 
-  const handleTouchMove = () => {
+  const handleTouchMove = (e) => {
     touchMoved.current = true;
+    // حدد اتجاه السوايب أول مرة بس
+    if (!swipeDirection.current) {
+      const dx = Math.abs(e.touches[0].clientX - touchStartX.current);
+      const dy = Math.abs(e.touches[0].clientY - touchStartY.current);
+      if (dx > 5 || dy > 5) {
+        swipeDirection.current = dy > dx ? "vertical" : "horizontal";
+      }
+    }
   };
 
   const handleTouchEnd = (e) => {
@@ -482,10 +493,9 @@ function MobileMarqueeRow({ items, lang, direction }) {
     const isRealTap = dx < 8 && dy < 8 && !touchMoved.current;
 
     if (isRealTap) {
-      // Tap → toggle pause
       isTapPaused.current = !isTapPaused.current;
     }
-    // Swipe → يكمل تلقائي بعد 1500ms عن طريق handleScroll
+    swipeDirection.current = null;
   };
 
   // لو tap خارج الصف → يكمل
@@ -505,8 +515,8 @@ function MobileMarqueeRow({ items, lang, direction }) {
     <div
       ref={scrollRef}
       dir="ltr"
-      className="flex overflow-x-auto hide-scrollbar gap-4 px-4 select-none touch-pan-x overscroll-x-contain relative z-10"
-      style={{ willChange: "scroll-position" }}
+      className="flex overflow-x-auto hide-scrollbar gap-4 px-4 select-none overscroll-x-contain relative z-10"
+      style={{ willChange: "scroll-position", touchAction: "pan-y" }}
       onScroll={handleScroll}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
